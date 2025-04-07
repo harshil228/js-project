@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Beautiful Quote Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+
+
+    #bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2f679c 0%, #9f2d86 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before, body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+   /* body::before {
+      width: 300px;
+      height: 300px;
+      background: #a18cd1;
+      top: 10%;
+      left: 5%;
+    }*/
+
+    .quote-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4); /* Dark transparent overlay */
+  border-radius: 20px;
+  z-index: -1;
+}
+
+    body::after {
+      width: 400px;
+      height: 400px;
+      background: #602a51;
+      bottom: 10%;
+      right: 5%;
+    }
+
+   /* .quote-box {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 600px;
+      color: #4a1459;
+      z-index: 1;
+    }*/
+
+    .quote-box {
+  background-image: url('quotes.jpeg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  text-align: center;
+  max-width: 600px;
+  color: #000153;
+  z-index: 1;
+  position: relative;
+}
+
+    #quote {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    #author {
+      font-size: 20px;
+      font-style: italic;
+      color: #7e1616;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .language-buttons,
+    .nav-buttons,
+    .change-language {
+      display: none;
+    }
+
+    button {
+      padding: 12px 28px;
+      font-size: 16px;
+      border: none;
+      background: #247c73;
+      color: white;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s ease; 
+    }
+
+    button:hover {
+      background: #851a1a;
+    }
+
+    .change-language {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+
+
+    <video autoplay muted loop id="bg-video">
+        <source src="q.mp4" type="video/mp4" />
+        Your browser does not support HTML5 video.
+      </video>
+
+
+
+
+
+  <div class="quote-box">
+    <div id="quote">Select a language to get started.</div>
+    <div id="author"></div>
+
+    <div class="btn-group language-buttons" style="display: flex;">
+      <button onclick="setLanguage('english')">English</button>
+      <button onclick="setLanguage('hindi')">हिंदी</button>
+    </div>
+
+    <div class="btn-group nav-buttons">
+      <button onclick="prevQuote()">Previous</button>
+      <button onclick="nextQuote()">Next</button>
+    </div>
+
+    <div class="btn-group change-language">
+      <button onclick="resetLanguage()">Change Language</button>
+    </div>
+  </div>
+
+  <script>
+    const englishQuotes = [
+      { content: "Silence isn’t emptiness—it’s full of answers.", author: "Bhagavad Gita" },
+      { content: "Detachment doesn’t mean not loving—it means loving without losing yourself.", author: "Load Krishna" },
+      { content: "You can give your best, love deeply, and still be detached. That is mastery.”", author: "unknown" },
+      { content: "The purpose of our lives is to be happy.", author: "Dalai Lama" },
+      { content: "In the middle of every difficulty lies opportunity.", author: "Albert Einstein" },
+      { content: "Roses are red, Violets are blue, Dreams don’t work Unless you do.", author: "unknown" }
+    ];
+ 
+    const hindiQuotes = [
+      { content: "जो खो गया, उसके लिए रोया नहीं करते।", author: "हरिवंश राय बच्चन" },
+      { content: "कर्म किए जा, फल की चिंता मत कर।", author: "भगवद गीता" },
+      { content: "सपने वो नहीं जो हम सोते वक्त देखते हैं, सपने वो हैं जो हमें सोने नहीं देते।", author: "डॉ. ए.पी.जे. अब्दुल कलाम" },
+      { content: "जीवन में अगर कुछ पाना हो तो तरीका बदलो, इरादे नहीं।", author: "अज्ञात" },
+      { content: "अगर सब कुछ मिल जाएगा जिंदगी में तो तमन्ना किसकी करोगे,कुछ अधूरी ख्वाहिशें ही तो जिंदगी जीने का मजा देती है।", author: "अज्ञात" }
+    ];
+
+    let currentLanguage = '';
+    let currentIndex = 0;
+
+    function setLanguage(lang) {
+      currentLanguage = lang;
+      currentIndex = 0;
+      showQuote();
+      document.querySelector('.language-buttons').style.display = 'none';
+      document.querySelector('.nav-buttons').style.display = 'flex';
+      document.querySelector('.change-language').style.display = 'flex';
+    }
+
+    function resetLanguage() {
+    
+      currentLanguage = '';
+      currentIndex = 0;
+      document.getElementById('quote').innerText = 'Select a language to get started.';
+      document.getElementById('author').innerText = '';
+      document.querySelector('.language-buttons').style.display = 'flex';
+      document.querySelector('.nav-buttons').style.display = 'none';
+      document.querySelector('.change-language').style.display = 'none';
+    }
+
+    function showQuote() {
+      const quotes = currentLanguage === 'english' ? englishQuotes : hindiQuotes;
+      const quoteObj = quotes[currentIndex];
+      document.getElementById('quote').innerText = `"${quoteObj.content}"`;
+      document.getElementById('author').innerText = `– ${quoteObj.author}`;
+    }
+
+    function nextQuote() {
+      const quotes = currentLanguage === 'english' ? englishQuotes : hindiQuotes;
+      currentIndex = (currentIndex + 1) % quotes.length;
+      showQuote();
+    }
+
+    function prevQuote() {
+      const quotes = currentLanguage === 'english' ? englishQuotes : hindiQuotes;
+      currentIndex = (currentIndex - 1 + quotes.length) % quotes.length;
+      showQuote();
+    }
+  </script>
+
+</body>
+</html>
